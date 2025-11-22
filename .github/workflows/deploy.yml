@@ -1,0 +1,108 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+
+      - name: Extract metadata (tags, labels) for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend
+          tags: |
+            type=raw,value=latest
+            type=sha
+          
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://edgedetectr.kailinx.com/api
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Copy files to OCI
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USERNAME }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          source: "docker-compose.yml,nginx/edgedetectr.conf"
+          target: "~/app/edgedetectr"
+          strip_components: 0
+
+      - name: Deploy to OCI
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USERNAME }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            cd ~/app/edgedetectr
+            
+            # Login to GHCR
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Pull latest images
+            export GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            docker compose -f docker-compose.yml pull
+            
+            # Restart services
+            docker compose -f docker-compose.yml up -d --remove-orphans
+            
+            # Copy Nginx config to gateway location if needed (assuming kailinx-gateway mounts this path)
+            # Adjust path based on actual gateway setup
+            # sudo cp nginx/edgedetectr.conf ~/app/nginx/conf.d/
+            # docker restart kailinx-gateway
