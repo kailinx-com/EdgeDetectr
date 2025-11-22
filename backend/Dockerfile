@@ -1,5 +1,5 @@
 # Build stage for C++ operators
-FROM --platform=linux/amd64 ubuntu:22.04 AS cpp-builder
+FROM --platform=linux/amd64 debian:bookworm-slim AS cpp-builder
 
 # Prevent interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -41,7 +41,7 @@ RUN if [ ! -f ./build/operators ]; then \
     fi
 
 # Node.js runtime stage
-FROM --platform=linux/amd64 ubuntu:22.04 AS runtime
+FROM --platform=linux/amd64 debian:bookworm-slim AS runtime
 
 WORKDIR /app
 

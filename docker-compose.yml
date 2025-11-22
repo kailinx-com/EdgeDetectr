@@ -12,6 +12,14 @@ services:
     networks:
       - web_gateway
       - internal
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 64M
+        reservations:
+          cpus: '0.10'
+          memory: 32M
 
   backend:
     build:
@@ -27,6 +35,14 @@ services:
       - ./results:/app/results
     networks:
       - internal
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
 
 networks:
   web_gateway:

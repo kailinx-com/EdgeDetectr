@@ -16,29 +16,14 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
 # Production image
-FROM --platform=$TARGETPLATFORM node:18-alpine AS runner
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+# Copy static files
+COPY --from=builder /app/out /usr/share/nginx/html
 
-# Don't run production as root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-USER nextjs
+# Copy nginx config if needed (optional, using default for now)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy necessary files from builder
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+EXPOSE 80
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Pass environment variables from build args
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
-EXPOSE 3000
-
-CMD ["node", "server.js"] 
+CMD ["nginx", "-g", "daemon off;"] 

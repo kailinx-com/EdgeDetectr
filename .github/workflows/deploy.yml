@@ -102,7 +102,9 @@ jobs:
             # Restart services
             docker compose -f docker-compose.yml up -d --remove-orphans
             
-            # Copy Nginx config to gateway location if needed (assuming kailinx-gateway mounts this path)
-            # Adjust path based on actual gateway setup
-            # sudo cp nginx/edgedetectr.conf ~/app/nginx/conf.d/
-            # docker restart kailinx-gateway
+            # Copy Nginx config to gateway location
+            # The gateway container mounts ~/app/nginx/conf.d/
+            cp nginx/edgedetectr.conf ~/app/nginx/conf.d/
+            
+            # Reload Nginx in the gateway container
+            docker exec kailinx-gateway nginx -s reload
