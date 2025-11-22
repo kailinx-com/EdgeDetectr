@@ -9,11 +9,11 @@ OcvPrewitt::OcvPrewitt() {}
 Mat OcvPrewitt::getEdges(const string& inputPath, const string& outputName) {
     clock_t t = clock();
 
-    Mat image = ImageUtils::getImage(inputPath);
-    Mat rgbImage = convertToRGB(image);
-    Mat grayImage = convertToGrayscale(rgbImage);
-    Mat gradX = computeGradientX(grayImage);
-    Mat gradY = computeGradientY(grayImage);
+    Mat image = ImageUtils::getImage(inputPath, cv::IMREAD_GRAYSCALE);
+    // Mat rgbImage = convertToRGB(image);
+    // Mat grayImage = convertToGrayscale(rgbImage);
+    Mat gradX = computeGradientX(image);
+    Mat gradY = computeGradientY(image);
     Mat edges = combineGradients(gradX, gradY);
     ImageUtils::writeImage(edges, outputName);
 

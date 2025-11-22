@@ -62,6 +62,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
     apt-get update && apt-get install -y \
     libopencv-dev \
     libomp5 \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create necessary directories with correct permissions

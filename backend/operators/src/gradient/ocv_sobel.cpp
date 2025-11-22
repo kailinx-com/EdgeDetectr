@@ -10,11 +10,11 @@ std::string OcvSobel::getOperatorName() const {
 cv::Mat OcvSobel::getEdges(const std::string& inputPath, const std::string& outputName) {
     clock_t t = clock();
 
-    cv::Mat image = ImageUtils::getImage(inputPath);
-    cv::Mat rgbImage = convertToRGB(image);
-    cv::Mat grayImage = convertToGrayscale(rgbImage);
-    cv::Mat gradX = computeGradientX(grayImage);
-    cv::Mat gradY = computeGradientY(grayImage);
+    cv::Mat image = ImageUtils::getImage(inputPath, cv::IMREAD_GRAYSCALE);
+    // cv::Mat rgbImage = convertToRGB(image);
+    // cv::Mat grayImage = convertToGrayscale(rgbImage);
+    cv::Mat gradX = computeGradientX(image);
+    cv::Mat gradY = computeGradientY(image);
     cv::Mat edges = combineGradients(gradX, gradY);
     ImageUtils::writeImage(edges, outputName);
 

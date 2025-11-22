@@ -1,9 +1,10 @@
 #include "../include/utils/image_utils.h"
 
 cv::Mat ImageUtils::getImage(
-        const std::string &inputPath
+        const std::string &inputPath,
+        cv::ImreadModes mode
 ) {
-    cv:: Mat image = cv::imread(inputPath, cv::IMREAD_COLOR);
+    cv:: Mat image = cv::imread(inputPath, mode);
     if (image.empty()) {
         throw std::runtime_error("Could not read the image: " + inputPath);
     }

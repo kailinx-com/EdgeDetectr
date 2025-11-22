@@ -11,7 +11,7 @@ public:
      * @param inputPath The path to the input image.
      * @return The image.
      */
-    static cv::Mat getImage(const std::string &inputPath);
+    static cv::Mat getImage(const std::string &inputPath, cv::ImreadModes mode = cv::IMREAD_COLOR);
 
     /**
      * @brief Writes an image to the specified file.
