@@ -11,7 +11,7 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     networks:
-      - web_gateway
+      - app_app-network
       - internal
     deploy:
       resources:
@@ -36,7 +36,7 @@ services:
       - ./uploads:/app/uploads
       - ./results:/app/results
     networks:
-      - web_gateway
+      - app_app-network
       - internal
     deploy:
       resources:
@@ -48,7 +48,7 @@ services:
           memory: 128M
 
 networks:
-  web_gateway:
+  app_app-network:
     external: true
   internal:
     driver: bridge
